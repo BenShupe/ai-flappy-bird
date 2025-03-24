@@ -1,4 +1,5 @@
 let pillars = [];
+let players = [];
 class Bird {
     constructor(weights) {
         this.weights = weights;
@@ -7,31 +8,34 @@ class Bird {
         this.vely = 0;
         this.timeAlive = 0;
         this.timeStart = time_now;
-        this.height = 50    ;
-        this.color1 = "#d4bf27"
-        this.color2 = "#dde2b1"
+        this.height = 45;
+        this.color = "#fff"
+        this.isDead=false;
     }
 
     draw() {
-        drawRect(this.x, this.y, this.height, this.height, this.color1);
-        drawRect(this.x+3, this.y+3, this.height-6, this.height-6, this.color2);
+        drawRect(this.x, this.y, this.height, this.height, BG_COLOR, false);
+        drawRect(this.x, this.y, this.height, this.height, this.color, true);
     }
 
     update() {
-        this.timeAlive = (time_now-this.timeStart)/1000;
+        if (this.isColliding()) this.isDead = true;
         this.vely += 0.0015*delta_time;
         this.y += this.vely*delta_time;
         this.y = Math.max(0, Math.min(canvas.height-this.height, this.y))
+        if(this.isDead) return;
+        this.timeAlive = (time_now-this.timeStart)/1000;
     }
 
     isColliding() {
         for(let i = 0; i < pillars.length; i++) {
             if (
                 this.x < pillars[i].x + pillars[i].width &&
-                this.x + this.width > pillars[i].x &&
-                (this.y < pillars[i].top || this.y + this.height > canvas.height - pillars[i].bottom)
-            )
+                this.x + this.height > pillars[i].x &&
+                (this.y < pillars[i].top_height || this.y + this.height > canvas.height - pillars[i].bottom_height)
+            ){
             return true;
+            }
         }
         return false;
     }
@@ -48,8 +52,8 @@ class Bird {
     }
 
     flap() {
-        if(this.isColliding())
-        player1.vely = -0.07*delta_time;
+        if(this.isDead) return;
+        this.vely = -0.5;
     }
 }
 
@@ -60,19 +64,21 @@ class Pillar {
         this.x = initalx;
         this.gap_height = 195;
         this.bottom_height = Math.random() * (canvas.height - this.gap_height - 50);
-        this.color = "green";
+        this.top_height = canvas.height-this.bottom_height-this.gap_height;
+        this.color = "#fff";
         this.passed_player = false;
     }
 
     draw() {
-        drawRect(this.x, canvas.height-this.bottom_height, this.width, this.bottom_height, this.color);
-        drawRect(this.x, 0, this.width, canvas.height-this.bottom_height-this.gap_height, this.color);
+        drawRect(this.x, canvas.height-this.bottom_height, this.width, this.bottom_height+5, this.color, true);
+        drawRect(this.x, -5, this.width, this.top_height+5, this.color, true);
     }
 
     update() {
+        if(players[0].isDead) return;
         this.x -= this.speed*delta_time;
         if(this.x <= canvas.width/3+50  && !this.passed_player) {
-            pillars.push(new Pillar());   
+            pillars.push(new Pillar());
             this.passed_player = true
         }
         else if(this.passed_player && this.x <= -this.width) {
@@ -82,43 +88,37 @@ class Pillar {
     }
 }
 
-function displayBest() {
-    drawText(`Best Score: ${player1.timeAlive.toFixed(1)}`, 5, 20, 20, "white");
-}
-
-function displayFPS() {
-    drawText(`${(1000/delta_time).toFixed(0)} FPS`, 5, 40, 20, "white");
-}
-
 let time_now = 0;
 let time_last = 0;
 let delta_time = 0;
-let player1 = new Bird();
+players.push(new Bird());
 pillars.push(new Pillar(2*canvas.width));
+const BG_COLOR = "#272b30";
 function loop(time) {
     time_now = time;
     delta_time = time_now-time_last;
     time_last = time_now;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawRect(0, 0, canvas.width, canvas.height, "#70c5cd")
-
-   
-    player1.update();
-    player1.draw();
+    drawRect(0, 0, canvas.width, canvas.height, BG_COLOR);
     
     for (let i = 0; i < pillars.length; i++) {
         pillars[i].update();
         pillars[i].draw();        
     }
 
-    displayFPS();
-    displayBest(); 
+    players[0].update();
+    players[0].draw();
+
     requestAnimationFrame(loop);
 }
+requestAnimationFrame(loop);
 
-document.addEventListener('keypress', e => {
+document.addEventListener('keydown', e => {
     if(e.repeat) return;
-    player1.vely = -0.07*delta_time;
+    players[0].flap();
 });
 
-requestAnimationFrame(loop);
+document.addEventListener("mousedown", e => {
+    if(e.repeat) return;
+    players[0].flap();
+});

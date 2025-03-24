@@ -2,8 +2,8 @@ const canvas = document.getElementById("screen");
 const ctx = canvas.getContext("2d");
 
 function setupCanvas() {
-    canvas.width = 600;
-    canvas.height = 850;
+    canvas.width = 450;
+    canvas.height = 600;
 }
 
 function clearCanvas() {
@@ -18,7 +18,12 @@ function drawCircle(x, y, radius, color) {
     ctx.closePath();
 }
 
-function drawRect(x, y, width, height, color) {
+function drawRect(x, y, width, height, color, wireframe=false) {
+    if (wireframe) {
+        ctx.strokeStyle = color;
+        ctx.strokeRect(x, y, width, height);
+        return;
+    }
     ctx.fillStyle = color;
     ctx.fillRect(x, y, width, height);
 }
