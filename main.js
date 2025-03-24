@@ -118,7 +118,7 @@ document.addEventListener('keydown', e => {
     players[0].flap();
 });
 
-document.addEventListener("mousedown", e => {
+document.addEventListener("click", e => {
     if(e.repeat) return;
     players[0].flap();
 });
