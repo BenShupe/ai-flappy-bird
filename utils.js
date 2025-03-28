@@ -2,7 +2,7 @@ const canvas = document.getElementById("screen");
 const ctx = canvas.getContext("2d");
 
 function setupCanvas() {
-    canvas.width = 450;
+    canvas.width = 475;
     canvas.height = 600;
 }
 
@@ -65,6 +65,23 @@ function drawText(text, x, y, size, color = "black") {
     ctx.font = size + "px Arial";
     ctx.fillStyle = color;
     ctx.fillText(text, x, y);
+}
+
+function dot(a, b) {
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+      result += a[i] * b[i];
+    }
+    return result;
+  }
+
+function gaussianRandom(mean=0, stdev=1) {
+    // Box–Muller transform
+    const u = 1 - Math.random(); // Converting [0,1) to (0,1], avoid log(0)
+    const v = Math.random();
+    const z = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+    // Transform to the desired mean and standard deviation:
+    return z * stdev + mean;
 }
 
 // Auto-setup the canvas on load
